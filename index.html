@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Great Ages - 偉人の年齢別偉業検索</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <h1>Great Ages</h1>
+        <p class="subtitle">あなたの年齢で偉人たちは何を成し遂げた？</p>
+    </header>
+
+    <main>
+        <section class="search-section">
+            <div class="age-input-container">
+                <label for="age-input">あなたの年齢を入力してください</label>
+                <input type="number" id="age-input" min="1" max="120" placeholder="例: 42">
+                <button id="search-button">検索</button>
+            </div>
+        </section>
+
+        <section class="results-section" id="results-container">
+            <h2>偉人たちの<span id="age-display"></span>歳での偉業</h2>
+            <div class="results-grid" id="results-grid">
+                <!-- 検索結果がここに表示されます -->
+                <p class="empty-message">年齢を入力して検索してください</p>
+            </div>
+        </section>
+
+        <section class="inspiration-message">
+            <h3>あなたの新たな一歩</h3>
+            <p>偉人たちも最初は一歩から始めました。今からでも遅くありません。</p>
+        </section>
+    </main>
+
+    <footer>
+        <p>© 2023 Great Ages - 偉人の年齢別偉業検索</p>
+    </footer>
+
+    <script src="data.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
