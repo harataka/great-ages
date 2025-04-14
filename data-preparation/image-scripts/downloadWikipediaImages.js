@@ -1,6 +1,6 @@
 /**
- * 名前リストからWikipedia画像をダウンロードするスクリプト
- * 指定した人物名リストから画像を検索してダウンロードします
+ * Wikipediaイメージダウンロードスクリプト
+ * テキストファイルから名前リストを読み込んでWikipediaから画像をダウンロードします
  */
 
 const fs = require('fs');
@@ -9,9 +9,9 @@ const axios = require('axios');
 const { promisify } = require('util');
 
 // 非同期関数に変換
+const readFileAsync = promisify(fs.readFile);
 const writeFileAsync = promisify(fs.writeFile);
 const mkdirAsync = promisify(fs.mkdir);
-const readFileAsync = promisify(fs.readFile);
 
 /**
  * 指定されたパスにディレクトリが存在しない場合は作成する
@@ -96,51 +96,21 @@ async function downloadImageFromWikipedia(name, outputPath) {
  * @param {string} filePath - 名前リストファイルのパス
  * @returns {Promise<string[]>} - 名前リスト
  */
-async function loadNameList(filePath) {
+async function readNameList(filePath) {
   try {
     if (!fs.existsSync(filePath)) {
-      console.log(`リストファイルが存在しません: ${filePath}`);
+      console.log(`名前リストファイルが存在しません: ${filePath}`);
       return [];
     }
     
     const content = await readFileAsync(filePath, 'utf8');
-    const names = content
-      .split('\n')
-      .map(line => line.trim())
-      .filter(line => line.length > 0);
+    const names = content.split('\n').filter(name => name.trim() !== '');
     
-    console.log(`名前リストを読み込みました: ${names.length}件`);
+    console.log(`名前リストファイルを読み込みました: ${names.length}件`);
     return names;
   } catch (error) {
-    console.error(`リスト読み込みエラー: ${filePath}`, error.message);
+    console.error(`名前リスト読み込みエラー: ${filePath}`, error.message);
     return [];
-  }
-}
-
-/**
- * 名前リストファイルを作成する
- * @param {string} filePath - ファイルパス
- * @param {string[]} names - 名前リスト
- */
-async function createSampleNameList(filePath) {
-  const sampleNames = [
-    'アイザック・ニュートン',
-    'マリー・キュリー',
-    'チャールズ・ダーウィン',
-    'ニコラ・テスラ',
-    'ガリレオ・ガリレイ',
-    'アルバート・アインシュタイン',
-    'スティーブン・ホーキング',
-    'レオナルド・ダ・ヴィンチ',
-    'ルイ・パスツール',
-    'アダ・ラブレス'
-  ];
-  
-  try {
-    await writeFileAsync(filePath, sampleNames.join('\n'), 'utf8');
-    console.log(`サンプル名前リストを作成しました: ${filePath}`);
-  } catch (error) {
-    console.error(`サンプル名前リスト作成エラー: ${filePath}`, error.message);
   }
 }
 
@@ -152,23 +122,16 @@ async function main() {
   const scriptDir = __dirname;
   
   // 出力ディレクトリ
-  const outputDir = path.join(scriptDir, '..', '..', 'src', 'images', 'scientists');
+  const outputDir = path.join(scriptDir, '..', '..', 'src', 'images', 'all_persons');
   
   // 名前リストファイル
-  const nameListPath = path.join(scriptDir, 'name_list.txt');
+  const nameListPath = path.join(scriptDir, 'extracted_names.txt');
   
-  // 名前リストファイルが存在しない場合はサンプルを作成
-  if (!fs.existsSync(nameListPath)) {
-    await createSampleNameList(nameListPath);
-    console.log('サンプルの名前リストを作成しました。必要に応じて編集してから再実行してください。');
-    return;
-  }
-  
-  // 名前リストを読み込む
-  const names = await loadNameList(nameListPath);
+  // 名前リストファイルから名前を読み込む
+  const names = await readNameList(nameListPath);
   
   if (names.length === 0) {
-    console.log('名前リストが空です。リストを編集してから再実行してください。');
+    console.log('名前リストが空です。まず extractNamesList.js を実行してください。');
     return;
   }
   

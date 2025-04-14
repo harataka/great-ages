@@ -1,84 +1,51 @@
-# 画像生成・ダウンロードツール
+# 画像ダウンロードスクリプト
 
-このディレクトリには、偉人や有名人の画像を生成またはダウンロードするための各種スクリプトが含まれています。
+このディレクトリには、必要な人物画像をダウンロードするためのスクリプトが含まれています。
 
-## 利用可能なスクリプト
+## 名前リスト抽出からWikipedia画像ダウンロードまでの手順
 
-### 1. `downloadImages.js`
+1. `extractNamesList.js` - data.jsファイルから人物名リストを抽出してテキストファイルに保存
+2. `downloadWikipediaImages.js` - 抽出された名前リストを使用してWikipediaから画像をダウンロード
 
-メインスクリプト。`data.js`ファイルに登録されている人物の画像を生成またはダウンロードします。
+## 実行方法
 
-**使用方法:**
-
-```bash
-# プレースホルダー画像を生成（デフォルト）
-node data-preparation/image-scripts/downloadImages.js
-
-# Web上から実際の人物画像をダウンロード
-node data-preparation/image-scripts/downloadImages.js --web
-# または
-node data-preparation/image-scripts/downloadImages.js -w
-```
-
-### 2. `downloadFromList.js`
-
-テキストファイルのリストから名前を読み込み、Wikipediaから画像をダウンロードします。
-
-**使用方法:**
+### 1. 名前リストの抽出
 
 ```bash
-node data-preparation/image-scripts/downloadFromList.js
+node extractNamesList.js
 ```
 
-初回実行時にサンプルの名前リスト（`name_list.txt`）が作成されます。必要に応じて編集してから再実行してください。
+これにより、`extracted_names.txt`ファイルが作成されます。
 
-### 3. `testDownload.js`
-
-単一の人物名を指定してWikipediaから画像をダウンロードするテスト用スクリプトです。
-
-**使用方法:**
+### 2. Wikipedia画像のダウンロード
 
 ```bash
-node data-preparation/image-scripts/testDownload.js "人物名"
-# 例:
-node data-preparation/image-scripts/testDownload.js "レオナルド・ダ・ヴィンチ"
+node downloadWikipediaImages.js
 ```
 
-### 4. `imageHelp.js`
+このスクリプトは、`extracted_names.txt`ファイルから名前リストを読み込み、Wikipediaから画像をダウンロードします。
+画像は `src/images/all_persons` ディレクトリに保存されます。
 
-画像生成・ダウンロードツールの使用方法とオプションを表示します。
+## 参考: その他のスクリプト
 
-**使用方法:**
+- `downloadImages.js` - より多くの画像ソース（Google、Unsplash）からのダウンロードもサポートする古いスクリプト
+
+## 前提条件
+
+これらのスクリプトを実行するには、Node.jsとnpmがインストールされている必要があります。
+また、以下のnpmパッケージが必要です：
 
 ```bash
-node data-preparation/image-scripts/imageHelp.js
+npm install axios
 ```
 
-## Web画像ダウンロード機能について
-
-Web画像ダウンロード機能では、以下のソースから順番に画像の取得を試みます：
-
-1. **Wikipedia**: 人物名でWikipediaを検索し、見つかったページの画像を取得（APIキー不要）
-2. **Unsplash**: 高品質なフリー画像をAPI経由で取得（APIキーが必要）
-3. **Google検索**: Google検索結果から画像を取得（APIキーが必要）
-
-すべてのソースから画像が見つからない場合は、プレースホルダー画像を生成します。
-
-## APIキーの設定
-
-Unsplash APIとGoogle Custom Search APIを使用するには、APIキーを取得して`downloadImages.js`ファイル内の対応する変数に設定する必要があります：
-
-```javascript
-// UnsplashのAPIキー
-const UNSPLASH_ACCESS_KEY = 'YOUR_UNSPLASH_ACCESS_KEY';
-
-// Google Custom Search APIのキー
-const GOOGLE_API_KEY = 'YOUR_GOOGLE_API_KEY';
-const GOOGLE_CSE_ID = 'YOUR_GOOGLE_CSE_ID';
-```
+## ローカル実行時
+ C:\Users\harat\Dropbox\02_dev\Web\great-ages\data-preparation\image-scripts
+ ↓
+ node extractNamesList.js
 
 ## 注意事項
 
-- Web上の画像を使用する場合は、著作権や利用規約にしたがってください
-- APIの利用制限に注意してください
-- ダウンロードした画像は自動的に`src/images`ディレクトリに保存されます 
+- APIリクエストの制限を超えないようにするため、リクエスト間に1秒の遅延を設けています。
+- すでに画像が存在する場合は、ダウンロードをスキップします。
+- ダウンロードに失敗した場合は、ログに記録されます。
