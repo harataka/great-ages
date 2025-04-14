@@ -1,5 +1,5 @@
 /**
- * Great Ages アプリケーションのメイン JavaScript ファイル
+ * Great Ages アプリケーションのフロントエンドJavaScript ファイル
  * 年齢入力と偉人データの表示機能を提供
  */
 

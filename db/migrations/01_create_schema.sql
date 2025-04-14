@@ -24,4 +24,21 @@ CREATE TABLE IF NOT EXISTS achievements (
 
 -- インデックスの作成
 CREATE INDEX idx_great_persons_name ON great_persons(name);
-CREATE INDEX idx_achievements_great_person_id ON achievements(great_person_id); 
+CREATE INDEX idx_achievements_great_person_id ON achievements(great_person_id);
+
+-- 偉人の名前を含む偉業ビューの作成
+CREATE OR REPLACE VIEW achievements_with_person AS
+SELECT 
+  a.id,
+  a.great_person_id,
+  g.name AS person_name,
+  a.title,
+  a.description,
+  a.achievement_date,
+  a.age_at_achievement,
+  a.created_at,
+  a.updated_at
+FROM 
+  achievements a
+JOIN
+  great_persons g ON a.great_person_id = g.id; 
