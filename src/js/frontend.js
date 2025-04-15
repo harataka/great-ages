@@ -152,11 +152,11 @@ function createPersonCard(person) {
     let imageHtml = '';
     if (person.image) {
         imageHtml = `<div class="card-image-container">
-            <img src="${person.image}" alt="${person.name}" class="card-image" onerror="this.onerror=null; this.src='src/images/no-image.webp'; this.alt='画像がありません';">
+            <img src="${person.image}" alt="${person.name}" class="card-image" onerror="this.onerror=null; this.src='/src/images/no-image.png'; this.alt='画像がありません';">
         </div>`;
     } else {
         imageHtml = `<div class="card-image-container">
-            <img src="src/images/no-image.webp" alt="画像がありません" class="card-image">
+            <img src="/src/images/no-image.png" alt="画像がありません" class="card-image">
         </div>`;
     }
     
