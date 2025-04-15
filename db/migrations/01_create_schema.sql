@@ -33,11 +33,22 @@ CREATE TABLE IF NOT EXISTS famous_people (
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- インデックスの作成
-CREATE INDEX idx_great_persons_name ON great_persons(name);
-CREATE INDEX idx_achievements_great_person_id ON achievements(great_person_id);
-CREATE INDEX idx_famous_people_name ON famous_people(name);
-CREATE INDEX idx_famous_people_birth_date ON famous_people(birth_date);
+-- インデックスの作成（既に存在する場合はスキップ）
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_indexes WHERE indexname = 'idx_great_persons_name') THEN
+    CREATE INDEX idx_great_persons_name ON great_persons(name);
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_indexes WHERE indexname = 'idx_achievements_great_person_id') THEN
+    CREATE INDEX idx_achievements_great_person_id ON achievements(great_person_id);
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_indexes WHERE indexname = 'idx_famous_people_name') THEN
+    CREATE INDEX idx_famous_people_name ON famous_people(name);
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_indexes WHERE indexname = 'idx_famous_people_birth_date') THEN
+    CREATE INDEX idx_famous_people_birth_date ON famous_people(birth_date);
+  END IF;
+END $$;
 
 -- 偉人の名前を含む偉業ビューの作成
 CREATE OR REPLACE VIEW achievements_with_person AS
