@@ -13,45 +13,52 @@
     </header>
 
     <main>
+        <!-- 検索セクション -->
         <section class="search-section">
+            <h2 class="section-title">年齢検索</h2>
             <div class="age-input-container">
                 <label for="age-input">あなたの年齢を入力してください</label>
                 <div class="input-flex-container">
                     <div class="number-input-container">
-                        <input type="number" id="age-number-input" min="40" max="49" value="40" class="number-input">
+                        <input type="number" id="age-input" min="1" max="100" value="40" class="number-input">
                         <span>歳</span>
                     </div>
 
                     <div class="slider-container">
-                        <input type="range" id="age-input" min="40" max="49" value="45" class="slider">
+                        <input type="range" id="age-slider" min="1" max="100" value="40" class="slider">
                         <div class="slider-labels">
-                            <span>40</span>
-                            <span>45</span>
-                            <span>49</span>
+                            <span>1</span>
+                            <span>50</span>
+                            <span>100</span>
                         </div>
                     </div>
                 </div>
 
-                <p class="future-notice">※将来的には40代以外の年齢層向けの拡張も予定しています</p>
                 <button id="search-button">検索</button>
             </div>
         </section>
 
-        <section class="results-section" id="results-container">
-            <!-- 検索前の有名人表示エリア -->
-            <div id="famous-people-section">
-                <h2><span id="famous-age-display">40</span>歳の有名人・芸能人</h2>
-                <div class="results-grid" id="famous-results-grid">
-                    <!-- 有名人の結果がここに表示されます -->
-                </div>
+        <!-- 今日が誕生日の著名人表示エリア -->
+        <section class="results-section" id="birthday-today-section" style="display: none;">
+            <h2 class="section-title">今日が誕生日の著名人</h2>
+            <div class="results-grid" id="birthday-results-grid">
+                <!-- 今日誕生日の著名人の結果がここに表示されます -->
             </div>
-            
-            <!-- 検索後の偉人表示エリア（初期状態では非表示） -->
-            <div id="great-people-section" style="display: none;">
-                <h2>偉人たちの<span id="age-display"></span>歳での偉業</h2>
-                <div class="results-grid" id="results-grid">
-                    <!-- 偉人の検索結果がここに表示されます -->
-                </div>
+        </section>
+
+        <!-- 同じ年齢の著名人表示エリア -->
+        <section class="results-section" id="famous-people-section" style="display: none;">
+            <h2 class="section-title">著名人・芸能人</h2>
+            <div class="results-grid" id="famous-results-grid">
+                <!-- 著名人の結果がここに表示されます -->
+            </div>
+        </section>
+        
+        <!-- 偉人の偉業表示エリア -->
+        <section class="results-section" id="great-people-section" style="display: none;">
+            <h2 class="section-title">偉人たちの偉業</h2>
+            <div class="results-grid" id="great-results-grid">
+                <!-- 偉人の検索結果がここに表示されます -->
             </div>
         </section>
     </main>
@@ -60,7 +67,8 @@
         <p>© 2023 Great Ages - 偉人の年齢別偉業検索</p>
     </footer>
 
-    <!-- モジュール形式でJavaScriptを読み込む -->
+    <!-- JavaScriptファイル読み込み -->
+    <script type="module" src="src/js/config.js"></script>
     <script type="module" src="src/js/data.js"></script>
     <script type="module" src="src/js/frontend.js"></script>
 </body>

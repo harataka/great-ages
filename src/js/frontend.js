@@ -5,51 +5,58 @@
 
 // データモジュールをインポート（type="module"を使用している場合）
 import { greatPeopleData, fetchFamousPeopleData } from './data.js';
+import { FAMOUS_PEOPLE_API_URL, DEFAULT_AGE, MIN_AGE, MAX_AGE, ERROR_MESSAGES } from './config.js';
 
 // DOM要素の取得
 const ageInput = document.getElementById('age-input');
-const ageNumberInput = document.getElementById('age-number-input');
-const ageCategoryButtons = document.querySelectorAll('.age-category-btn');
+const ageSlider = document.getElementById('age-slider');
 const searchButton = document.getElementById('search-button');
-const resultsGrid = document.getElementById('results-grid');
 const famousResultsGrid = document.getElementById('famous-results-grid');
-const ageDisplay = document.getElementById('age-display');
-const famousAgeDisplay = document.getElementById('famous-age-display');
+const birthdayResultsGrid = document.getElementById('birthday-results-grid');
 const famousPeopleSection = document.getElementById('famous-people-section');
 const greatPeopleSection = document.getElementById('great-people-section');
+const birthdayTodaySection = document.getElementById('birthday-today-section');
+const greatResultsGrid = document.getElementById('great-results-grid');
+
+// ローディング状態のフラグ
+let isLoading = false;
 
 /**
  * 指定された年齢の偉人データを検索し表示する
  * @param {number} age - 検索する年齢
  */
 function searchGreatPeople(age) {
-    // 入力された年齢を表示部分に反映
-    ageDisplay.textContent = age;
-    
-    // 該当する偉人をフィルタリング
-    const filteredPeople = greatPeopleData.filter(person => person.age === parseInt(age));
-    
-    // 結果表示エリアをクリア
-    resultsGrid.innerHTML = '';
-    
-    // 検索結果があるか確認
-    if (filteredPeople.length > 0) {
-        // 各偉人のカードを生成して表示
-        filteredPeople.forEach(person => {
-            const personCard = createPersonCard(person);
-            resultsGrid.appendChild(personCard);
+    // 以前の結果をクリア
+    greatResultsGrid.innerHTML = '';
+
+    // 指定された年齢での偉人の実績をフィルタリング
+    const achievements = greatPeopleData.filter(person => {
+        return person.age === age;
+    });
+
+    // 結果が見つかったら表示
+    if (achievements.length > 0) {
+        // 偉人セクションを表示
+        greatPeopleSection.style.display = 'block';
+        
+        // カードを作成して表示
+        achievements.forEach(person => {
+            const card = createPersonCard(person);
+            greatResultsGrid.appendChild(card);
         });
     } else {
+        // 偉人セクションを表示
+        greatPeopleSection.style.display = 'block';
+        
         // 結果がない場合のメッセージ
         const emptyMessage = document.createElement('p');
         emptyMessage.className = 'empty-message';
-        emptyMessage.textContent = `${age}歳で偉業を達成した偉人は見つかりませんでした。あなたが歴史を作る番かもしれません！`;
-        resultsGrid.appendChild(emptyMessage);
+        emptyMessage.textContent = `${age}歳で有名な実績を残した偉人は見つかりませんでした。`;
+        greatResultsGrid.appendChild(emptyMessage);
     }
-    
-    // 偉人セクションを表示し、有名人セクションを非表示にする
-    greatPeopleSection.style.display = 'block';
-    famousPeopleSection.style.display = 'none';
+
+    // 結果セクションに滑らかにスクロール
+    greatPeopleSection.scrollIntoView({ behavior: 'smooth' });
 }
 
 /**
@@ -58,84 +65,113 @@ function searchGreatPeople(age) {
  * @param {boolean} isInitialLoad - 初期ロード時かどうか
  */
 async function displayFamousPeople(age, isInitialLoad = false) {
+    if (isLoading) return;
+    isLoading = true;
+
+    // 結果をクリア
+    famousResultsGrid.innerHTML = '';
+    
+    if (!isInitialLoad) {
+        // ローディングメッセージ表示
+        const loadingMessage = document.createElement('p');
+        loadingMessage.className = 'loading';
+        loadingMessage.textContent = 'データを取得中...';
+        famousResultsGrid.appendChild(loadingMessage);
+    }
+
     try {
-        // 入力された年齢を表示部分に反映
-        famousAgeDisplay.textContent = age;
+        // APIからデータを取得
+        const response = await fetch(`${FAMOUS_PEOPLE_API_URL}?age=${age}`);
         
-        // ローディングインジケータを表示
-        famousResultsGrid.innerHTML = '<div class="loading">読み込み中...</div>';
+        if (!response.ok) {
+            throw new Error(ERROR_MESSAGES.API_FETCH_FAILED);
+        }
         
-        // APIから有名人データを取得
-        const famousPeopleData = await fetchFamousPeopleData(age);
+        const data = await response.json();
         
-        // 結果表示エリアをクリア
+        // 以前の結果をクリア
         famousResultsGrid.innerHTML = '';
         
-        // 検索結果があるか確認
-        if (famousPeopleData && famousPeopleData.length > 0) {
-            // 各有名人のカードを生成して表示
-            famousPeopleData.forEach(person => {
-                const personCard = createPersonCard(person);
-                famousResultsGrid.appendChild(personCard);
+        // 著名人セクションを表示
+        famousPeopleSection.style.display = 'block';
+        
+        // セクションタイトルに年齢を表示
+        const sectionTitle = famousPeopleSection.querySelector('.section-title');
+        if (sectionTitle) {
+            sectionTitle.textContent = `${age}歳の著名人・芸能人`;
+        }
+        
+        if (data.length > 0) {
+            // データを表示
+            data.forEach(person => {
+                const card = createPersonCard(person);
+                famousResultsGrid.appendChild(card);
             });
         } else {
             // 結果がない場合のメッセージ
             const emptyMessage = document.createElement('p');
             emptyMessage.className = 'empty-message';
-            emptyMessage.textContent = `${age}歳の有名人・芸能人は見つかりませんでした。`;
+            emptyMessage.textContent = `${age}歳の著名人は見つかりませんでした。`;
             famousResultsGrid.appendChild(emptyMessage);
         }
-        
-        // 初期ロード時は有名人セクションのみ表示
-        if (isInitialLoad) {
-            greatPeopleSection.style.display = 'none';
-            famousPeopleSection.style.display = 'block';
-        }
     } catch (error) {
-        console.error('有名人データの取得に失敗しました:', error);
-        famousResultsGrid.innerHTML = '<div class="error">データの読み込みに失敗しました。再度お試しください。</div>';
+        console.error('エラー:', error);
+        
+        // エラーメッセージ表示
+        famousResultsGrid.innerHTML = '';
+        const errorMessage = document.createElement('p');
+        errorMessage.className = 'error';
+        errorMessage.textContent = `データの取得中にエラーが発生しました: ${error.message}`;
+        famousResultsGrid.appendChild(errorMessage);
+    } finally {
+        isLoading = false;
     }
 }
 
 /**
- * 今日が誕生日の有名人を取得して表示する
+ * 今日が誕生日の著名人を表示する
  */
 async function displayTodayBirthday() {
+    // 結果をクリア
+    birthdayResultsGrid.innerHTML = '';
+    
+    // ローディングメッセージ表示
+    const loadingMessage = document.createElement('p');
+    loadingMessage.className = 'loading';
+    loadingMessage.textContent = '今日が誕生日の著名人を検索中...';
+    birthdayResultsGrid.appendChild(loadingMessage);
+
     try {
-        // 今日誕生日の有名人データを取得するAPIエンドポイントを呼び出す
-        const response = await fetch('/api/famous-people/today-birthday');
+        // APIからデータを取得
+        const response = await fetch(`${FAMOUS_PEOPLE_API_URL}/birthdays/today`);
+        
         if (!response.ok) {
-            throw new Error('API呼び出しに失敗しました');
+            throw new Error(ERROR_MESSAGES.API_FETCH_FAILED);
         }
         
-        const todayBirthdayPeople = await response.json();
+        const data = await response.json();
         
-        // 今日誕生日の有名人がいる場合は表示
-        if (todayBirthdayPeople && todayBirthdayPeople.length > 0) {
-            const birthdaySection = document.createElement('div');
-            birthdaySection.id = 'birthday-section';
-            birthdaySection.className = 'birthday-section';
+        // 以前の結果をクリア
+        birthdayResultsGrid.innerHTML = '';
+        
+        if (data.length > 0) {
+            // 誕生日セクションを表示
+            birthdayTodaySection.style.display = 'block';
             
-            const birthdayHeader = document.createElement('h2');
-            birthdayHeader.textContent = '今日が誕生日の有名人';
-            birthdaySection.appendChild(birthdayHeader);
-            
-            const birthdayGrid = document.createElement('div');
-            birthdayGrid.className = 'results-grid';
-            
-            todayBirthdayPeople.forEach(person => {
-                const personCard = createPersonCard(person);
-                birthdayGrid.appendChild(personCard);
+            // データを表示
+            data.forEach(person => {
+                const card = createPersonCard(person);
+                birthdayResultsGrid.appendChild(card);
             });
-            
-            birthdaySection.appendChild(birthdayGrid);
-            
-            // メインコンテンツの先頭に挿入
-            const mainElement = document.querySelector('main');
-            mainElement.insertBefore(birthdaySection, mainElement.firstChild);
+        } else {
+            // 結果がない場合はセクションを非表示
+            birthdayTodaySection.style.display = 'none';
         }
     } catch (error) {
-        console.error('今日の誕生日データの取得に失敗しました:', error);
+        console.error('誕生日データのエラー:', error);
+        
+        // エラーの場合はセクションを非表示
+        birthdayTodaySection.style.display = 'none';
     }
 }
 
@@ -148,113 +184,107 @@ function createPersonCard(person) {
     const card = document.createElement('div');
     card.className = 'great-person-card';
     
-    // 画像HTMLを作成
-    let imageHtml = '';
-    if (person.image) {
-        imageHtml = `<div class="card-image-container">
-            <img src="${person.image}" alt="${person.name}" class="card-image" onerror="this.onerror=null; this.src='/src/images/no-image.png'; this.alt='画像がありません';">
-        </div>`;
+    // 画像コンテナ
+    const imageContainer = document.createElement('div');
+    imageContainer.className = 'card-image-container';
+    
+    // 画像
+    const image = document.createElement('img');
+    image.className = 'card-image';
+    image.src = person.image || 'src/images/placeholder.jpg';
+    image.alt = person.name;
+    image.onerror = function() {
+        this.src = 'src/images/placeholder.jpg';
+    };
+    
+    imageContainer.appendChild(image);
+    card.appendChild(imageContainer);
+    
+    // カードコンテンツ
+    const content = document.createElement('div');
+    content.className = 'card-content';
+    
+    // 名前
+    const name = document.createElement('h3');
+    name.className = 'person-name';
+    name.textContent = person.name;
+    
+    // 実績または説明
+    const achievement = document.createElement('p');
+    achievement.className = 'achievement';
+    
+    if (person.achievement) {
+        // 実績情報がある場合
+        achievement.textContent = person.achievement;
+        // 年齢情報がある場合は表示
+        if (person.age) {
+            achievement.textContent = `${person.age}歳: ${person.achievement}`;
+        }
+    } else if (person.description) {
+        // 説明情報がある場合
+        achievement.textContent = person.description;
     } else {
-        imageHtml = `<div class="card-image-container">
-            <img src="/src/images/no-image.png" alt="画像がありません" class="card-image">
-        </div>`;
+        // 生没年のみの場合
+        achievement.textContent = `${person.birthDate ? person.birthDate + ' - ' : ''}${person.deathDate || ''}`;
     }
     
-    card.innerHTML = `
-        ${imageHtml}
-        <div class="card-content">
-            <h3 class="person-name">${person.name}</h3>
-            <p class="achievement">${person.achievement}</p>
-        </div>
-    `;
+    content.appendChild(name);
+    content.appendChild(achievement);
+    card.appendChild(content);
     
     return card;
 }
 
-/**
- * スライダーと数値入力フィールドの値を同期させる
- * @param {string} sourceType - 更新が発生したソース（'slider'または'number'）
- * @param {number} value - 新しい値
- */
-function syncAgeInputs(sourceType, value) {
-    if (sourceType === 'slider') {
-        ageNumberInput.value = value;
-        
-        // 検索前の状態では、スライダー移動に合わせて有名人表示も更新
-        if (famousPeopleSection.style.display !== 'none') {
-            displayFamousPeople(value);
-        }
-    } else if (sourceType === 'number') {
-        // 数値入力が範囲外の場合、スライダーの最大値または最小値にクランプする
-        const sliderValue = Math.min(Math.max(value, ageInput.min), ageInput.max);
-        ageInput.value = sliderValue;
-        
-        // 検索前の状態では、入力値変更に合わせて有名人表示も更新
-        if (famousPeopleSection.style.display !== 'none') {
-            displayFamousPeople(value);
-        }
-    }
-}
-
 // 検索ボタンのクリックイベント
 searchButton.addEventListener('click', () => {
-    const age = ageNumberInput.value.trim();
+    const age = parseInt(ageInput.value);
     
-    if (age && !isNaN(age) && parseInt(age) >= 40) {
-        // 検索ボタンクリック時は偉人のみを検索して表示
-        searchGreatPeople(age);
-    } else {
-        alert('40歳以上の有効な年齢を入力してください');
+    // 入力チェック
+    if (isNaN(age) || age < MIN_AGE || age > MAX_AGE) {
+        alert(ERROR_MESSAGES.INVALID_AGE);
+        return;
     }
+    
+    // 検索を実行
+    displayFamousPeople(age);
+    searchGreatPeople(age);
 });
 
 // ページ読み込み時のイベント
 document.addEventListener('DOMContentLoaded', () => {
-    // 初期値で有名人を表示
-    const initialAge = ageNumberInput.value;
-    displayFamousPeople(initialAge, true);
+    // 初期検索 - アプリケーション起動時にデフォルト値での検索を行う
+    const defaultAge = parseInt(ageInput.value) || DEFAULT_AGE;
     
-    // 今日が誕生日の有名人を表示
+    // 今日が誕生日の著名人を表示
     displayTodayBirthday();
     
-    // スライダーの値が変更されたときに表示を更新
-    ageInput.addEventListener('input', function() {
-        syncAgeInputs('slider', this.value);
+    // デフォルト年齢での検索
+    displayFamousPeople(defaultAge, true);
+    searchGreatPeople(defaultAge);
+    
+    // スライダー値変更時に数値入力を更新
+    ageSlider.addEventListener('input', () => {
+        ageInput.value = ageSlider.value;
     });
     
-    // 数値入力フィールドの値が変更されたときにスライダーを更新
-    ageNumberInput.addEventListener('input', function() {
-        syncAgeInputs('number', this.value);
+    // 数値入力変更時にスライダーを更新
+    ageInput.addEventListener('input', () => {
+        const age = parseInt(ageInput.value);
+        if (!isNaN(age) && age >= MIN_AGE && age <= MAX_AGE) {
+            ageSlider.value = age;
+        }
     });
+});
+
+// 入力フィールドのバリデーション
+ageInput.addEventListener('blur', () => {
+    const age = parseInt(ageInput.value);
     
-    // 年齢カテゴリボタンのクリックイベント
-    ageCategoryButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            const baseAge = parseInt(this.dataset.age);
-            
-            // 各年代の代表的な年齢を設定
-            let age;
-            switch (baseAge) {
-                case 35:
-                    age = 37; // 30代後半の中央値
-                    break;
-                case 40:
-                    age = 45; // 40代の中央値
-                    break;
-                case 50:
-                    age = 55; // 50代の中央値
-                    break;
-                case 60:
-                    age = 65; // 60代の中央値
-                    break;
-                default:
-                    age = baseAge;
-            }
-            
-            // 入力フィールドを更新
-            ageNumberInput.value = age;
-            // スライダーも更新
-            syncAgeInputs('number', age);
-        });
-    });
+    if (isNaN(age) || age < MIN_AGE) {
+        ageInput.value = MIN_AGE;
+        ageSlider.value = MIN_AGE;
+    } else if (age > MAX_AGE) {
+        ageInput.value = MAX_AGE;
+        ageSlider.value = MAX_AGE;
+    }
 }); 

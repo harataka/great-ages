@@ -12,27 +12,14 @@
 // 必要なモジュールのインポート
 const express = require('express');
 const path = require('path');
-const { Pool } = require('pg');
+const db = require('../db/dbConnection');
 
 // Expressアプリの初期化
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// PostgreSQL接続設定
-const dbConfig = {
-  connectionString: process.env.DATABASE_URL || 'postgres://u8r4fbr4291f1o:p25704c2f68e5050b30bff97b77defc40efda510557de7a0db40251a441f7aae2@c952v5ogavqpah.cluster-czrs8kj4isg7.us-east-1.rds.amazonaws.com:5432/d62efhc40v3ckm',
-  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
-};
-
-console.log('データベース接続設定:', {
-  ...dbConfig,
-  connectionString: dbConfig.connectionString.replace(/:[^:]*@/, ':****@') // パスワードをマスク
-});
-
-const pool = new Pool(dbConfig);
-
 // データベース接続テスト
-pool.query('SELECT NOW()', (err, res) => {
+db.query('SELECT NOW()', (err, res) => {
   if (err) {
     console.error('PostgreSQL接続エラー:', err);
   } else {
@@ -119,7 +106,7 @@ app.get('/api/famous-people', async (req, res) => {
     console.log('パラメータ:', params);
 
     // データベースクエリを実行
-    const { rows } = await pool.query(query, params);
+    const { rows } = await db.query(query, params);
     console.log('取得結果:', rows.length, '件');
 
     // クライアント向けに整形
@@ -174,7 +161,7 @@ app.get('/api/famous-people/today-birthday', async (req, res) => {
     console.log('実行するクエリ:', query);
 
     // データベースクエリを実行
-    const { rows } = await pool.query(query);
+    const { rows } = await db.query(query);
     console.log('取得結果:', rows.length, '件');
 
     // クライアント向けに整形
