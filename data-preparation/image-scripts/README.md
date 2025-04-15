@@ -40,6 +40,8 @@ npm install axios
 ```
 
 ## ローカル実行時
+ cd C:\Users\harat\Dropbox\02_dev\Web\great-ages\
+ 
  C:\Users\harat\Dropbox\02_dev\Web\great-ages\data-preparation\image-scripts
  ↓
  node extractNamesList.js
